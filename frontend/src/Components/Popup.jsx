@@ -46,11 +46,11 @@ const Popup = props => {
           </div>
           
           <br />
-          <h2>Name: {props.product.name}</h2>
-          <p>Id: {props.product.id}</p>
-          <p>Description: {props.product.description}</p>
-          <p>Current Stock: {props.product.stock}</p>
-          <p className="round">Minimum Stock: {props.product.minStock}</p>
+          <h2 className="display-2">Name: {props.product.name}</h2>
+          <p className="mb-0">Id: {props.product.id}</p>
+          <p className="mb-0">Description: {props.product.description}</p>
+          <p className="mb-0">Current Stock: {props.product.stock}</p>
+          <p className="mb-0">Minimum Stock: {props.product.minStock}</p>
       </div>
   );
 };

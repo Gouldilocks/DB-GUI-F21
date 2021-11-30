@@ -9,6 +9,7 @@ import OrderPage from './Pages/Order';
 import DeliveriesPage from './Pages/Deliveries';
 import StockPage from './Pages/Stock';
 import PrivateRoute from './Util/PrivateRoute';
+import ProductAdder  from './Pages/ProductAdder';
 
 // React functional component
 function App () {
@@ -85,6 +86,16 @@ function App () {
 		<Route path="/" element={
 			<PrivateRoute>
 			  <DashboardPage/>
+			</PrivateRoute>
+		}/>
+    <Route path="/newProduct" element={
+			<PrivateRoute>
+				<ProductAdder/>
+			</PrivateRoute>
+		}/>
+    <Route path="/editProduct/:productId" element={
+			<PrivateRoute>
+				<ProductAdder/>
 			</PrivateRoute>
 		}/>
 		<Route path="/order" element={

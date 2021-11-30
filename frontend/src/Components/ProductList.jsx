@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import Popup from '../Components/Popup'
+import Popup from '../Components/Popup';
+import { Link, Redirect } from 'react-router-dom';
 import { Card, CardActions, CardContent,CardMedia, Button,
    Typography, Container, Grid, Modal} from '@material-ui/core';
 
@@ -31,6 +32,10 @@ export const ProductList = props => {
             </CardContent>
             <CardActions className="">
                 <Button size="small" onClick={() => {togglePopup(); setProduct(product);}} >More Details</Button>
+                <Link to={ `/editProduct/${product.id}` } style={{ textDecoration: 'none' }}>
+                  <Button size="small" onClick={() => {togglePopup(); setProduct(product);}} >Edit</Button>
+                </Link>
+                
             </CardActions>
             </Card>
         </Grid>
