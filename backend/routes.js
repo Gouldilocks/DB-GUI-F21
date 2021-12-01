@@ -109,11 +109,60 @@ module.exports = function routes(app, logger) {
 
     // UPDATE Order
     app.put('/order/:orderId', (req, res) => {
-        let query = 'UPDATE `Order` SET orderDate = (?), deliveryAddress = (?), carrier = (?), sentDate = (?), estArrival = (?), delivered = (?), RestaurantID = (?) WHERE orderID = (?)';
         let orderId = req.param('orderId');
         let rq = req.query;
-        let fields = [rq.orderDate, rq.address, rq.carrier, rq.shippedDate, rq.arrivalDate, rq.delivered, rq.restaurantId, orderId];
-        returnQuery(res, query, fields);
+
+        let fields = [];
+        let setStrings = [];
+
+        console.log(rq);
+
+        const checkParam = (setStr, data) => {
+            console.log(data);
+            if(data === "erase") {
+                setStrings.push(setStr);
+                fields.push(null);
+            } else {
+                if(!badParam(data)) {
+                    setStrings.push(setStr);
+                    fields.push(data);
+                }
+            }
+        }
+
+        checkParam("orderDate = (?)", rq.orderDate);
+        checkParam("deliveryAddress = (?)", rq.address);
+        checkParam("carrier = (?)", rq.carrier);
+        checkParam("sentDate = (?)", rq.shippedDate);
+        checkParam("estArrival = (?)", rq.arrivalDate);
+        checkParam("delivered = (?)", rq.delivered);
+        checkParam("RestaurantID = (?)", rq.restaurantId);
+        fields.push(orderId);
+
+        if(setStrings.length === 0) {
+            res.status(400).send("All fields were empty. Nothing to change.");
+            return;
+        }
+
+        let query = 'UPDATE `Order` SET ' + setStrings.join(", ") + ' WHERE orderID = (?)';
+
+        if(!badParam(rq.restaurantId)) {
+            connect(res, (sql) => {
+                simpleQuery(res, sql, 'SELECT * FROM Restaurant WHERE restaurantId = (?)', rq.restaurantId, (rows) => {
+                    if(rows.length <= 0) {
+                        res.status(400).send("Restaurant with specified id does not exist");
+                        sql.release();
+                    } else {
+                        simpleQuery(res, sql, query, fields, (rows) => {
+                            res.status(200).send(JSON.stringify(rows));
+                            sql.release();
+                        });
+                    }
+                });
+            });
+        } else {
+            returnQuery(res, query, fields);
+        }
     });
 
     // DELETE Order via OrderId

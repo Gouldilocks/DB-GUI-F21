@@ -51,28 +51,41 @@ const updateOrder = (order) => {
         arrivalDate: order.arrivalDate,
         address: order.address,
         carrier: order.carrier,
-        delivered: order.delivered
+        delivered: order.delivered,
+        restaurantId: order.restaurantId
     };
 
-    deleteOrderDetail(order.id).then(() => {
+    if(!order.items || order.items.length === 0) {
+        console.log("No items when updating order");
         return axios.put(`http://${url}:8000/order/${order.id}?` + toQuery(request)).then(res => {
             console.log(res);
-
-            let promiseArr = [];
-            for(const i of order.items)
-                promiseArr.push(addOrderDetail(order.id, i.product, i.quantity));
-
-            Promise.all(promiseArr).then(() => {
-                return true;
-            }).catch((err) => {
-                console.log(err);
-                return false;
-            });
+            return true;
         }).catch(err => {
             console.log(err.response);
             return false;
         });
-    });
+    } else {
+        deleteOrderDetail(order.id).then(() => {
+            return axios.put(`http://${url}:8000/order/${order.id}?` + toQuery(request)).then(res => {
+                console.log(res);
+
+                let promiseArr = [];
+                for(const i of order.items)
+                    promiseArr.push(addOrderDetail(order.id, i.product, i.quantity));
+
+                return Promise.all(promiseArr).then(() => {
+                    return true;
+                }).catch((err) => {
+                    console.log(err);
+                    return false;
+                });
+            }).catch(err => {
+                console.log(err.response);
+                return false;
+            });
+        });
+    }
+
 }
 
 const deleteOrder = (orderId) => {
@@ -106,7 +119,8 @@ const getOrder = (orderId) => {
             for(const i of itemsData) {
                 order.items.push({productId: i.productID, quantity: i.quantity});
             }
-            console.log(order.items);
+            console.log("RETURN ORDER");
+            console.log(order);
 
             return order;
         }).catch(err => {
@@ -132,16 +146,16 @@ const getOrders = (restaurantId) => {
 
         for(const td of res.data) {
             let promise = getOrder(td.orderID).then((order) => {
-                orders.put(order);
-                return orders;
+                orders.push(order);
+                console.log("Put Order: ");
+                console.log(order);
             }).catch(err => {
-                console.log(err.response);
-                return null;
+                console.log(err);
             });
             promiseArr.push(promise);
         }
 
-        Promise.all(promiseArr).then(() => {
+        return Promise.all(promiseArr).then(() => {
             return orders;
         }).catch((err) => {
             console.log(err);
