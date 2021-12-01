@@ -1,0 +1,34 @@
+$primaryColor: #0AAD5C;
+$borderColor: #D4D4D4;
+
+.login-root {
+    width: 100vw;
+    height: 100vh;
+    background-color: #EFEFEF;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+
+    form {
+        width: 30rem;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem;
+        border: 1px solid $borderColor;
+        border-radius: 10px;
+    }
+
+    img {
+        width: 8rem;
+        align-self: center;
+        margin-bottom: 2rem;
+    }
+
+    p {
+        margin-bottom: 0;
+    }
+}

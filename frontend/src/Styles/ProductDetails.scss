@@ -1,0 +1,28 @@
+$primaryColor: #0AAD5C;
+
+* {
+  font-family: Inter, serif;
+}
+
+.product-image {
+  width: 50%;
+  height: 50%;
+
+  border-radius: 10px;
+}
+
+.custom-btn {
+  color: #fff;
+  background-color: $primaryColor;
+  border-color: #fff;
+  border-radius: 6px;
+  height: 40px;
+  font-size: 16px;
+  padding: 8px 1rem;
+  font-family: Inter, serif;
+}
+
+.custom-btn:hover {
+  color: #fff;
+  background-color: lighten($primaryColor, 5%);
+}

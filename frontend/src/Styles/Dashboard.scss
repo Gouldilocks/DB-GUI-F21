@@ -1,0 +1,33 @@
+$primaryColor: #0AAD5C;
+$borderColor: #D4D4D4;
+
+.dashboard-root {
+    height: 100vh;
+    background-color: whitesmoke;
+
+    .panel {
+        background-color: white;
+        //border: 1px solid $borderColor;
+    }
+
+    .panel-round {
+        border-radius: 1rem;
+    }
+
+    .red {
+        border: 1px solid lightcoral;
+    }
+
+    .trash-btn {
+        width: 35px;
+        height: 35px;
+        background-color: white;
+        border-radius: 50%;
+        border: 0;
+        margin: 0;
+    }
+
+    .trash-btn:hover {
+        background-color: #D4D4D4;
+    }
+}
