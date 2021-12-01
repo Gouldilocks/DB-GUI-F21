@@ -1,5 +1,3 @@
-@import 'https://fonts.googleapis.com/css?family=Inter:300,400,600,700';
-
 $primaryColor: #0AAD5C;
 $borderColor: #D4D4D4;
 
@@ -39,12 +37,12 @@ $borderColor: #D4D4D4;
     border: 2px darken($borderColor, 20%) solid;
 }
 
-#dropdown {
+#dropdownImg {
     width: 10px;
     height: 10px;
 }
 
-#dropdown:hover, #dropdown:focus {
+#dropdownImg:hover, #dropdownImg:focus {
     opacity: 0.4;
 }
 
@@ -72,13 +70,6 @@ $borderColor: #D4D4D4;
     color: #fff;
     background-color: $primaryColor;
     border-color: $primaryColor;
-}
-
-.circle-btn {
-    color: #fff;
-    background-color: $primaryColor;
-    border-color: $primaryColor;
-    border-radius: 50%;
 }
 
 .nav-text-primary {

@@ -1,0 +1,93 @@
+$primaryColor: #0AAD5C;
+$borderColor: #D4D4D4;
+
+/*div{ Reduce the scope on these. Affects other pages
+  padding-left: 3vw;
+  padding-right: 3vw;
+}*/
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.deliveries-root {
+  background-color: whitesmoke;
+  height: 100vh;
+  .main-panel {
+    height: 100vh;
+    background-color: white;
+  }
+
+  .panel-round {
+    border-radius: 1rem;
+  }
+
+  .panel-border {
+    border: 1px solid $borderColor;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+table{
+  width: 100%;
+}
+
+/*button {
+  background-color: #4CAF50; /* Green 
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+}*/
+
+/* for rows */
+.table-header{
+  border-bottom: 1px solid grey;
+}
+.table-header-delveries{
+  text-align: center;
+}
+tr {
+  overflow: hidden;
+}
+.expanded{
+  height: auto;
+}
+.contracted{
+  height: 1em;
+}

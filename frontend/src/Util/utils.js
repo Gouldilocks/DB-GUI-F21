@@ -1,4 +1,12 @@
-export const isLogin = () => {
-    // add functionality to see if logged in TODO
-    return true
+const isLogin = () => {
+    return sessionStorage.getItem("userId") > 0;
+}
+
+const toQuery = (obj) => {
+    return Object.keys(obj).map(key => key + '=' + obj[key]).join('&');
+}
+
+export {
+    isLogin,
+    toQuery
 }

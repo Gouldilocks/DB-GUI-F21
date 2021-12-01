@@ -1,18 +1,16 @@
-const UserTypes = { // TODO Match this with the database.
-    EMPLOYEE: "employee",
-    MANAGER: "manager",
-    SUPPLIER: "supplier"
+export const UserTypes = {
+    EMPLOYEE: 1,
+    MANAGER: 2,
+    SUPPLIER: 3
 }
 
 export class User {
-    constructor(id, username, email, password, userTypeId) {
+    constructor(id, username, email, password, userType, restaurantId) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
-        this.userType = null; // TODO Query database for userType using userTypeId
-
-        if(this.userType !== UserTypes.SUPPLIER)
-            this.restaurantId = null; // TODO Get the restaurant this user is associated with
+        this.userType = userType;
+        this.restaurantId = restaurantId;
     }
 }

@@ -1,0 +1,57 @@
+@import 'https://fonts.googleapis.com/css?family=Inter:300,400,600,700';
+@import '~bootstrap/scss/bootstrap';
+
+$primaryColor: #0AAD5C;
+$borderColor: #D4D4D4;
+
+.app-btn {
+    color: #fff;
+    background-color: $primaryColor;
+    border-color: $primaryColor;
+    font-family: Inter, var(--bs-body-font-family);
+}
+
+.app-btn:hover {
+    color: #fff;
+    background-color: lighten($primaryColor, 5%);
+    box-shadow: 0 2px 3px #a2a2a2;
+}
+
+.circle-btn {
+    color: #fff;
+    background-color: $primaryColor;
+    border-color: $primaryColor;
+    border-radius: 50%;
+}
+
+.inter {
+    font-family: Inter, var(--bs-body-font-family);
+}
+
+.bg-smoke {
+    background-color: whitesmoke;
+}
+
+.text-app {
+    color: $primaryColor;
+}
+
+.w-10 {
+    width: 10%;
+}
+
+.w-20 {
+    width: 20%;
+}
+
+.w-30 {
+    width: 30%;
+}
+
+.w-40 {
+    width: 40%;
+}
+
+.w-45 {
+    width: 45%;
+}
