@@ -13,12 +13,10 @@ export const DashboardPage = props => {
     const userService = new UserService();
 
     const [ items, setItems ] = useState([]); // Used for search
-    const [ user, setUser ] = useState(null); // only used for rerender
+    const [ user, setUser ] = useState(null);
+    const [ forceRender, setForceRender ] = useState({}); // only used for rerender
 
     useEffect(() => {
-
-        // This is a mess. I have no idea how react updates work
-
         userService.loadUser((user) => {
             console.log("Dashboard Loading User: ");
             console.log(userService.hasUser());
@@ -30,6 +28,9 @@ export const DashboardPage = props => {
                         console.log("Loaded Inventory");
                         setItems(inventory.items);
                     });
+                } else {
+                    setForceRender({});
+                    setItems(inventoryService.getInventory().items);
                 }
             }
         });

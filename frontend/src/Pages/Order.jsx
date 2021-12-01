@@ -70,7 +70,7 @@ export const OrderPage = () => {
         const carrier = ["Fedex", "USPS", "UPS"];
         const random = Math.floor(Math.random() * carrier.length);
 
-        orderService.postOrder(user.restaurantId, "", carrier[random], items, () => {
+        orderService.postOrder(user.restaurantId, storeAddress, carrier[random], items, () => {
             setErrorMsg("");
             setSuccessMsg("Order has been successfully placed.");
             setItems([]);
