@@ -1,705 +1,473 @@
 const pool = require('./db')
 
+const connect = (res, callback) => {
+    pool.getConnection((error, connection) => {
+        if(error) {
+            logger.error('Problem obtaining MySQL connection', error);
+            res.status(400).send('Problem obtaining MySQL connection');
+        } else {
+            callback(connection);
+        }
+    });
+}
+
+const simpleQuery = (res, sql, query, fields, callback) => {
+    sql.query(query, fields, (error, rows, fields) => {
+        if(error) {
+            sql.release();
+            console.log(error);
+            res.status(400).send("An error has occurred");
+        } else {
+            callback(rows);
+        }
+    });
+}
+
+const returnQuery = (res, query, fields) => {
+    connect(res, (sql) => {
+        simpleQuery(res, sql, query, fields, (rows) => {
+            res.status(200).send(JSON.stringify(rows));
+            sql.release();
+        });
+    });
+}
+
+const badParam = (param) => {
+    return (!param || param === null || param === "null" || param === "undefined");
+}
+
 module.exports = function routes(app, logger) {
-  // GET /
-  app.get('/', (req, res) => {
-    res.status(200).send('This is the port for the API. Go to port 3000 to view the web page.');
-  });
 
-  //  --------------------- productTable ---------------------------------
-  // /productTable/{productID}
-  // GET
-  app.get('/productTable', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Product Id from the URL parameters
-        var productId = req.param('productId');
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('SELECT * FROM ProductTable WHERE productId = (?)', productId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-		  // res.status(200).json({
-             // "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    app.get('/', (req, res) => {
+        res.status(200).send('This is the port for the API. Go to port 3000 to view the web page.');
     });
-  });
 
-  // /productTable/{productID}
-  // PUT
-  app.put('/productTable', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Product Id from the URL parameters
-        var productId = req.param('productId');
-        var name = req.body.name;
-        var description = req.body.description;
-        var image = req.body.image;
-        var minVal = req.body.minVal;
+    /********** Product Routes **********/
 
-        var query = 'UPDATE ProductTable' +
-                    'SET name = (?) ' 
-                    'description = (?) ' +
-                    'image = (?) ' + 
-                    'minVal = (?) ' +
-                    'WHERE productId = (?)';
-
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query(query, [name, description, image, minVal, productId], function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // GET All Products
+    app.get('/product', (req, res) => {
+        returnQuery(res, 'SELECT * FROM ProductTable');
     });
-  });
 
-  // /productTable/{productID}
-  // DELETE
-  app.delete('/productTable', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Product Id from the URL parameters
-        var productId = req.param('productId');
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('DELETE * FROM ProductTable WHERE productId = (?)', productId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // GET Product via ProductID
+    app.get('/product/:productId', (req, res) => {
+        let productId = req.param('productId');
+        returnQuery(res, 'SELECT * FROM ProductTable WHERE productId = (?)', productId);
     });
-  });
 
-  // /productTable/{orderID}
-  // GET
-  app.get('/productTable', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Order Id from the URL parameters
-        var orderId = req.param('orderId');
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('SELECT * FROM ProductTable WHERE orderId = (?)', orderId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // POST Product
+    app.post('/product', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.name, rq.description, rq.image, rq.price];
+        returnQuery(res, 'INSERT INTO ProductTable(name, description, image, priceperunit) VALUES (?,?,?,?)', fields);
     });
-  });
 
-    //  --------------------- Order ---------------------------------
-  // /Order
-  // GET
-  app.get('/order', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
+    // UPDATE Product via ProductID
+    app.put('/product/:productId', (req, res) => {
+        let productId = req.param('productId');
+        let rq = req.query;
+        let fields = [rq.name, rq.description, rq.image, rq.price, productId];
+        returnQuery(res, 'UPDATE ProductTable SET name = (?), description = (?), image = (?), priceperunit = (?) WHERE productId = (?)', fields);
+    });
 
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('SELECT * FROM `Order`', function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
+    // DELETE Product via ProductID
+    app.delete('/product/:productId', (req, res) => {
+        let productId = req.param('productId');
+        returnQuery(res, 'DELETE FROM ProductTable WHERE productId = (?)', productId);
+    });
+
+    /********** Order Routes **********/
+
+    // GET All Orders
+    app.get('/order', (req, res) => {
+        let rq = req.query;
+
+        if(badParam(rq.orderId) && badParam(rq.restaurantId)) {
+            returnQuery(res, 'SELECT * FROM `Order`');
+        } else {
+            if(!badParam(rq.orderId)) {
+                returnQuery(res, 'SELECT * FROM `Order` WHERE orderID = (?)', rq.orderId);
             }
-        });
-      }
+            if(!badParam(rq.restaurantId)) {
+                returnQuery(res, 'SELECT * FROM `Order` WHERE RestaurantID = (?)', rq.restaurantId);
+            }
+        }
     });
-  });
 
-  // /Order
-  // POST
-  app.post('/order', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-
-        // Getting the variables from the body of the request
-        var orderDate = req.body.orderDate;
-        var deliveryAddress = req.body.deliveryAddress;
-        var carrier = req.body.carrier;
-        var sentDate = req.body.sentDate;
-        var estArrival = req.body.estArrival;
-        var delivered = req.body.delivered;
-
-        var query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered)' + 
-                    'VALUES ((?)(?)(?)(?)(?)(?))';
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('query', [orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered], function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    app.get('/order/:orderId', (req, res) => {
+        let orderId = req.param('orderId');
+        returnQuery(res, 'SELECT * FROM `Order` WHERE orderID = (?)', orderId);
     });
-  });
 
-  
-  // /order/{orderId}
-  // PUT
-  app.put('/order', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Order Id from the URL parameters
-        // And the remainder of variables from the body
-        var orderId = req.param('orderId');
-        var orderDate = req.body.orderDate;
-        var deliveryAddress = req.body.deliveryAddress;
-        var carrier = req.body.carrier;
-        var sentDate = req.body.sentDate;
-        var estArrival = req.body.estArrival;
-        var delivered = req.body.delivered;
-
-        var query = 'UPDATE `Order`' +
-                    'SET orderDate = (?) ' 
-                    'deliveryAddress = (?) ' +
-                    'carrier = (?) ' + 
-                    'sentDate = (?) ' +
-                    'estArrival = (?) ' +
-                    'delivered = (?) ' +
-                    'WHERE orderId = (?)';
-
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query(query, [orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered, orderId], function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // POST Order
+    app.post('/order', (req, res) => {
+        let query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered, RestaurantID) VALUES (?,?,?,?,?,?,?)';
+        let rq = req.query;
+        let fields = [rq.orderDate, rq.address, rq.carrier, rq.shippedDate, rq.arrivalDate, rq.delivered, rq.restaurantId];
+        returnQuery(res, query, fields);
     });
-  });
 
-  // /order/{orderId}
-  // DELETE
-  app.delete('/order', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the Order Id from the URL parameters
-        var orderId = req.param('orderId');
+    // UPDATE Order
+    app.put('/order/:orderId', (req, res) => {
+        let orderId = req.param('orderId');
+        let rq = req.query;
 
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('DELETE * FROM `db`.`order_table` WHERE orderId = (?)', orderId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(result)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+        let fields = [];
+        let setStrings = [];
+
+        console.log(rq);
+
+        const checkParam = (setStr, data) => {
+            console.log(data);
+            if(data === "erase") {
+                setStrings.push(setStr);
+                fields.push(null);
+            } else {
+                if(!badParam(data)) {
+                    setStrings.push(setStr);
+                    fields.push(data);
+                }
+            }
+        }
+
+        checkParam("orderDate = (?)", rq.orderDate);
+        checkParam("deliveryAddress = (?)", rq.address);
+        checkParam("carrier = (?)", rq.carrier);
+        checkParam("sentDate = (?)", rq.shippedDate);
+        checkParam("estArrival = (?)", rq.arrivalDate);
+        checkParam("delivered = (?)", rq.delivered);
+        checkParam("RestaurantID = (?)", rq.restaurantId);
+        fields.push(orderId);
+
+        if(setStrings.length === 0) {
+            res.status(400).send("All fields were empty. Nothing to change.");
+            return;
+        }
+
+        let query = 'UPDATE `Order` SET ' + setStrings.join(", ") + ' WHERE orderID = (?)';
+
+        if(!badParam(rq.restaurantId)) {
+            connect(res, (sql) => {
+                simpleQuery(res, sql, 'SELECT * FROM Restaurant WHERE restaurantId = (?)', rq.restaurantId, (rows) => {
+                    if(rows.length <= 0) {
+                        res.status(400).send("Restaurant with specified id does not exist");
+                        sql.release();
+                    } else {
+                        simpleQuery(res, sql, query, fields, (rows) => {
+                            res.status(200).send(JSON.stringify(rows));
+                            sql.release();
+                        });
+                    }
+                });
+            });
+        } else {
+            returnQuery(res, query, fields);
+        }
     });
-  });
 
-  // ---------------------------------------------- Users -----------------------------------
-// /user
-  // GET
-  app.get('/allusers', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('SELECT * FROM UserTable', function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-           // res.status(200).json({
-		res.end(JSON.stringify(rows)); // Result in JSON format
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // DELETE Order via OrderId
+    app.delete('/order/:orderId', (req, res) => {
+        let orderId = req.param('orderId');
+        returnQuery(res, 'DELETE FROM `Order` WHERE orderId = (?)', orderId);
     });
-  });
 
+    /********** OrderDetails Routes **********/
 
-  // /user
-  // POST
-  app.post('/user', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
+    // GET OrderDetails
+    app.get('/orderDetails', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.orderId, rq.productId];
 
-        // Getting the variables from the body of the request
-        var username = req.body.username;
-        var password = req.body.password;
-        var usertype = req.body.usertype;
-
-
-        var query = 'INSERT INTO UserTable(username, password, userType)' +
-                    'VALUES ((?)(?)(?))';
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('query', [username, password, usertype], function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(rows)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+        if(badParam(rq.orderId)) {
+            returnQuery(res, 'SELECT * FROM OrderDetails'); // All details
+        } else {
+            if (badParam(rq.productId)) {
+                returnQuery(res, 'SELECT * FROM OrderDetails WHERE orderId = (?)', fields);
+            } else {
+                returnQuery(res, 'SELECT * FROM OrderDetails WHERE orderId = (?) AND productID = (?)', fields);
+            }
+        }
     });
-  });
 
-  // /user/{userId}
-  // GET
-  app.get('/user', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the User Id from the URL parameters
-        var userId = req.param('userId');
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('SELECT * FROM UserTable WHERE userId = (?)', userId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-	    res.end(JSON.stringify(rows));
-           // res.status(200).json({
-            //  "data": JSON.stringify(rows)});
-          }
-        });
-      }
+    // POST OrderDetails
+    app.post('/orderDetails', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.orderId, rq.productId, rq.quantity];
+        returnQuery(res, 'INSERT INTO OrderDetails(orderID, productID, quantity) VALUES (?,?,?)', fields);
     });
-  });
 
-  // /user/{userId}
-  // PUT
-  app.put('/user', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the User Id from the URL parameters
-        var userId = req.param('userId');
-        var username = req.body.username;
-        var password = req.body.password;
-        var userType = req.body.userType;
+    // UPDATE OrderDetails via orderId and productId
+    app.put('/orderDetails', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.quantity, rq.orderId, rq.productId];
 
-        var query = 'UPDATE UserTable' +
-                    'SET username = (?) ' 
-                    'password = (?) ' +
-                    'userType = (?) ' + 
-                    'WHERE userId = (?)';
+        if(badParam(rq.orderId) || badParam(rq.productId)) {
+            res.status(400).send("Missing productId or orderId");
+            return;
+        }
 
-
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query(query, [username, password, userType, userId], function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(rows)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+        returnQuery(res, 'UPDATE OrderDetails SET quantity = (?) WHERE orderID = (?) AND productID = (?)', fields);
     });
-  });
 
-  // /user/{userId}
-  // DELETE
-  app.delete('/user', (req, res) => {
-    // obtain a connection from our pool of connections
-    pool.getConnection(function (err, connection){
-      if(err){
-        // if there is an issue obtaining a connection, release the connection instance and log the error
-        logger.error('Problem obtaining MySQL connection',err)
-        res.status(400).send('Problem obtaining MySQL connection'); 
-      } else {
-        // Getting the User Id from the URL parameters
-        var userId = req.param('userId');
+    // DELETE OrderDetails via orderId or with productId
+    app.delete('/orderDetails', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.orderId, rq.productId];
 
-        // if there is no issue obtaining a connection, execute query and release connection
-        // Will need to change the query to the appropriately named table
-        connection.query('DELETE * FROM `db`.`user_table` WHERE userId = (?)', userId, function (err, rows, fields) {
-          connection.release();
-          if (err) {
-            logger.error("Error while fetching values: \n", err);
-            res.status(400).json({
-              "data": [],
-              "error": "Error obtaining values"
-            })
-          } else {
-		res.end(JSON.stringify(rows)); // Result in JSON format
-//            res.status(200).json({
-//              "data": JSON.stringify(rows)});
-          }
-        });
-      }
+        if(badParam(rq.orderId)) {
+            res.status(400).send("Missing orderId");
+            return;
+        }
+
+        if(badParam(rq.productId))
+            returnQuery(res, 'DELETE FROM OrderDetails WHERE orderId = (?)', fields);
+        else
+            returnQuery(res, 'DELETE FROM OrderDetails WHERE orderId = (?) AND productId = (?)', fields);
     });
-  });
 
+    /********** User Routes **********/
 
-app.get('/allInventory', function (req, res) {
-    pool.getConnection(function (err, con){
-	con.query("SELECT * FROM InventoryTable", function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+    // GET All Users
+    app.get('/user', (req, res) => {
+        returnQuery(res, 'SELECT * FROM UserTable');
     });
-});
 
-// /inventoryTable/{restaurantID}
-app.get('/inventoryTable', function(req, res){
-    pool.getConnection(function (err, con){
-        var restaurantID = req.param("restaurantID");
-        con.query("SELECT * FROM InventoryTable WHERE restaurantID = (?)", restaurantID, function(err, result, fields){
-            if(err) throw err;
-            res.end(JSON.stringify(result));
+    // GET All Employees
+    app.get('/employee', (req, res) => {
+        returnQuery(res, 'SELECT * FROM restaurantEmployee');
+    });
+
+    // GET All Employees
+    app.get('/employee/:userId', (req, res) => {
+        let userId = req.param('userId');
+        returnQuery(res, 'SELECT * FROM restaurantEmployee WHERE userID = (?)', userId);
+    });
+
+    // GET RestaurantId via UserId (Links Employee to Restaurant) // TODO Test
+    app.get('/getRestaurantId', (req, res) => {
+        let userId = req.query.userId;
+        returnQuery(res, 'SELECT * FROM restaurantEmployee where userId = (?)', userId);
+    });
+
+    // GET UserId via Username (Links UserId to User) // TODO Test
+    app.get('/getUserId', (req, res) => {
+        let username = req.query.username;
+        returnQuery(res, 'SELECT * FROM UserTable where username = (?)', username);
+    });
+
+    // POST Register a new User (Checks if user already exists)
+    app.post('/register', (req, res) => {
+        connect(res, (sql) => {
+
+            let username = req.query.username;
+            let password = req.query.password;
+            let email = req.query.email;
+            let usertype = req.query.usertype;
+            let restaurantName = req.query.restaurantName;
+
+            let userId, restaurantId;
+
+            if (!username || !password || !email || !usertype || usertype <= 0) {
+                res.status(400).send('Invalid credentials');
+                return;
+            }
+            if (usertype < 3 && !restaurantName) {
+                res.status(400).send('Restaurant name is required');
+                return;
+            }
+            if (username.length < 4) {
+                res.status(400).send('Username is too short');
+                return;
+            }
+
+            // Sorry about this mess.
+
+            simpleQuery(res, sql, 'SELECT * FROM UserTable where username = (?)', username, (rows) => {
+                if (rows.length > 0) {
+                    sql.release();
+                    res.status(400).send("Username already exists");
+                } else {
+                    simpleQuery(res, sql, 'SELECT * FROM Restaurant where name = (?)', restaurantName, (rows) => {
+                        if (rows.length <= 0 && usertype < 3) {
+                            sql.release();
+                            res.status(400).send("Restaurant does not exist");
+                        } else {
+                            if(rows.length > 0)
+                                restaurantId = rows[0].restaurantID;
+                            simpleQuery(res, sql, 'INSERT INTO UserTable(username, password, email, userType) VALUES (?,?,?,?)', [username, password, email, usertype], (rows) => {
+                                if (usertype >= 3) { // If they're a supplier resolve.
+                                    sql.release();
+                                    res.status(200).send("Registered account successfully");
+                                } else {
+                                    userId = rows.insertId;
+                                    simpleQuery(res, sql, 'INSERT INTO restaurantEmployee (userID, restaurantID) VALUES (?,?)', [userId, restaurantId], (rows) => {
+                                        sql.release();
+                                        res.status(200).send("Registered account successfully");
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         });
     });
-});
-// /inventoryTable/{productID}
-app.get('/inventoryTable', function(req, res){
-    pool.getConnection(function (err, con){
-        var productID = req.param("productID");
-        con.query("SELCT * FROM InventoryTable WHERE productID = (?)", productID, function(err, result, fields){
-            if (err) throw err;
-            res.end(JSON.stringify(result));
-	});
+
+    // GET Logins in a User (Checks password and if account exists)
+    app.get('/login', (req, res) => {
+        connect(res, (sql) => {
+            let username = req.query.username;
+            let password = req.query.password;
+
+            if(!username || !password) {
+                res.status(400).send('Invalid credentials');
+                return;
+            }
+
+            simpleQuery(res, sql, 'SELECT * FROM UserTable where username = ?', username, (rows) => {
+                sql.release();
+                if(rows.length === 0) {
+                    res.status(400).send('Username does not exist');
+                } else {
+                    if(password === rows[0].password) {
+                        res.status(200).send(rows[0]);
+                    } else {
+                        res.status(400).send('Incorrect password');
+                    }
+                }
+            });
+        });
     });
-});
-app.get('/allOrderDetails', function (req, res) {
-    pool.getConnection(function (err, con){
-	con.query("SELECT * FROM OrderDetails", function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+
+    // GET User via UserId // TODO Test
+    app.get('/user/:userId', (req, res) => {
+        let userId = req.param("userId");
+        returnQuery(res, 'SELECT * FROM UserTable WHERE userId = (?)', userId);
     });
-});
 
-app.put('/inventoryTable', function(req, res){
-    pool.getConnection(function (err, con){
-        con.query("UPDATE InventoryTable SET stock=? WHERE restaurantID= (?)", [req.body.stock, req.body.restaurantID], function(err, result, fields){
-            if(err) throw err;
-            res.end(JSON.stringify(result));
-	});
+    // UPDATE User via UserId // TODO Test
+    app.put('/user/:userId', (req, res) => {
+        let query = 'UPDATE UserTable SET username = (?), password = (?), userType = (?), WHERE userId = (?)';
+        let userId = req.param('userId');
+        let rq = req.query;
+        let fields = [rq.username, rq.password, rq.userType, userId];
+        returnQuery(res, query, fields);
     });
-});
 
-app.put('/inventoryTable', function(req, res){
-    pool.getConnection(function (err, con){
-        con.query("INSERT INTO InventoryTable(restaurantID, productID, stock) VALUES(?)", [req.body.restaurantID, req.body.productID, req.body.stock], function(err, result, fields){
-            if(err) throw err;
-            res.end(JSON.stringify(result));
-	});
+    // DELETE User via userId // TODO Test
+    app.delete('/user/:userId', (req, res) => {
+        let userId = req.param('userId');
+        connect(res, (sql) => {
+            simpleQuery(res, sql, 'DELETE FROM restaurantEmployee WHERE userID = (?)', userId, (rows) => {
+                simpleQuery(res, sql, 'DELETE FROM UserTable WHERE userID = (?)', userId, (rows) => {
+                    sql.release();
+                    res.status(200).send("Deleted User: " + userId);
+                });
+            });
+        });
     });
-});
-app.put('/orderDetails', function(req, res){
-    pool.getConnection(function (err, con){
-        con.query("INSERT INTO orderDetails(orderID, productID, quantity) VALUES(?)", [req.body.orderID, req.body.productID, req.body.quantity], function(err, result, fields){
-            if(err) throw err;
-            res.end(JSON.stringify(result));
-	});
+
+    // DELETE Employee via userId
+    app.delete('/employee/:userId', (req, res) => {
+        let userId = req.param('userId');
+        returnQuery(res, 'DELETE FROM restaurantEmployee WHERE userID = (?)', userId);
     });
-});
 
-app.delete('/inventoryTable', function(req, res){
-    pool.getConnection(function (err, con){
-        con.query("DELETE FROM InventoryTable WHERE restaurantID= (?) && productID= (?)", [req.body.restaurantID, req.body.productID], function(err, result, fields){
-            if(err) throw err;
-            res.end(JSON.stringify(result));
-	});
+    /********** Inventory Routes **********/
+
+    // GET All Inventories
+    app.get('/inventory', (req, res) => {
+        returnQuery(res, 'SELECT * FROM InventoryTable');
     });
-});
 
-
-
-
-
-
-//GET
-// /orderDetail/{orderId}
-app.get('/orderDetail', function (req, res) {
-    pool.getConnection(function (err, con){
-        var orderID = req.param('orderID');
-       	con.query("SELECT * FROM orderDetails WHERE orderID = (?)", orderID, function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+    // GET Inventory via RestaurantId // TODO Test
+    app.get('/inventory/:restaurantId', (req, res) => {
+        let restaurantId = req.param("restaurantId");
+        returnQuery(res, 'SELECT * FROM InventoryTable WHERE restaurantId = (?)', restaurantId);
     });
-});
 
-// /restaurant
-app.get('/restaurant', function (req, res) {
-    pool.getConnection(function (err, con){
-	con.query("SELECT * FROM restaurant",function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+    // GET Inventory via ProductId // TODO Test
+    app.get('/inventory', (req, res) => {
+        let productId = req.query.productId;
+        returnQuery(res, 'SELECT * FROM InventoryTable WHERE productId = (?)', productId);
     });
-});
 
-// /restaurant/{restaurantID}
-app.get('/restaurant', function (req, res) {
-    pool.getConnection(function (err, con){
-        var restaurantID = req.param('restaurantID');
-	con.query("SELECT * FROM restaurant WHERE restaurantID = (?)", restaurantID, function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+    // POST Inventory (Allows for a new stock quantity in a restaurant inventory) // TODO Test
+    app.post('/inventory', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.restaurantId, rq.productId, rq.stock, rq.minVal];
+
+        // Check if no duplicates
+        connect(res, (sql) => {
+            simpleQuery(res, sql, 'SELECT * FROM InventoryTable WHERE restaurantId = (?) AND productId = (?)', fields, (rows) => {
+                if(rows.length > 0) {
+                    sql.release();
+                    res.status(400).send("Product already exists in this inventory");
+                } else {
+                    simpleQuery(res, sql, 'INSERT INTO InventoryTable (restaurantID, productID, stock, minVal) VALUES (?,?,?,?)', fields, (rows) => {
+                        sql.release();
+                        res.status(200).send(JSON.stringify(rows));
+                    });
+                }
+            });
+        });
     });
-});
 
-// /productTable
-app.get('/allProductTable', function (req, res) {
-    pool.getConnection(function (err, con){
-	con.query("SELECT * FROM productTable",function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	});
+    // UPDATE Inventory (Allows for updating stock quantity in a restaurant inventory) // TODO Test
+    app.put('/inventory', (req, res) => {
+        let query = 'UPDATE InventoryTable SET stock = (?), minVal = (?) WHERE restaurantId = (?) AND productId = (?)';
+        let rq = req.query;
+        let fields = [rq.stock, rq.minVal, rq.restaurantId, rq.productId];
+        returnQuery(res, query, fields);
     });
-});
 
-
-//PUT
-// /orderDetail/{orderId}
-app.put('/orderDetail', async (req, res) => {
-    pool.getConnection(function (err, con){
-	var newQuantity = req.body.newQuantity
-	var orderID = req.param('orderID');
-
-	 con.query("UPDATE orderDetail SET Quantity = (?) WHERE orderID = (?)", [newQuantity, orderId] ,function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	 });
-     });
-});
-
-///restaurant/{restaurantID}
-app.put('/restaurant', async (req, res) => {
-    pool.getConnection(function (err, con){
-	var newActivity = req.body.newActivity
-	var restaurantID = req.param('restaurantID');
-
-         con.query("UPDATE restaurant SET Activity = (?) WHERE restaurantID = (?)", [newActivity, restaurantID] ,function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result)); // Result in JSON format
-	 });
+    // DELETE Inventory (Allows deleting a product from a restaurant inventory) // TODO Test
+    app.delete('/inventory/:restaurantId', (req, res) => {
+        let restaurantId = req.param('restaurantId');
+        let rq = req.query;
+        let fields = [restaurantId, rq.productId];
+        returnQuery(res, 'DELETE FROM InventoryTable WHERE restaurantId = (?) AND productId = (?)', fields);
     });
-});
 
+    /********** Restaurant Routes **********/
 
-//POST 
+    app.get('/restaurant', (req, res) => {
+        let restaurantName = req.query.restaurantName;
 
-// /restaurant
-app.post('/restaurant', async (req, res) => {
-    pool.getConnection(function (err, con){
-        var restaurantID = req.body.restaurantID
-        var name = req.body.name
-        var dateJoined = req.body.dateJoined 
-        var active = req.body.active
-    
-        con.query("INSERT INTO restaurant (restaurantID, name, dateJoined, active) VALUES (?, ?, ?, ?)", [restaurantID, name, dateJoined, active],function (err, result, fields) {
-            if (err) throw err;
-            res.end(JSON.stringify(result)); // Result in JSON format
-	});
+        if(restaurantName) {
+            returnQuery(res, 'SELECT * FROM Restaurant WHERE name = (?)', restaurantName);
+        } else {
+            returnQuery(res, 'SELECT * FROM Restaurant');
+        }
     });
-});
 
+    app.get('/restaurant/:restaurantId', (req, res) => {
+        let restaurantId = req.param('restaurantId');
 
-// /productTable
-app.post('/productTable', async (req, res) => {
-    pool.getConnection(function (err, con){
-        var productID = req.body.restaurantID
-        var name = req.body.name
-        var description = req.body.dateJoined 
-        var image = req.body.active
-        var minVal = req.body.minVal
-    
-        con.query("INSERT INTO productTable (productID, name, description, image, minVal) VALUES (?, ?, ?, ?, ?)", [productID, name, description, image, minVal ],function (err, result, fields) {
-            if (err) throw err;
-            res.end(JSON.stringify(result)); // Result in JSON format
-	});
+        if(!restaurantId || restaurantId === "null") {
+            res.status(400).send("RestaurantId is null");
+            return;
+        }
+
+        returnQuery(res, 'SELECT * FROM Restaurant WHERE restaurantId = (?)', restaurantId);
     });
-});
 
-
-// DELETE
-
-// /orderDetail/{orderId}
-app.delete('/orderDetail/:orderID', async (req, res) => {
-    pool.getConnection(function (err, con){
-	var orderID = req.param('orderID');
-	con.query("DELETE FROM orderDetails WHERE orderID = ? ", orderID,function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result));
-	});
+    app.post('/restaurant', (req, res) => {
+        let rq = req.query;
+        let fields = [rq.name, rq.joinedDate, rq.active];
+        returnQuery(res, 'INSERT INTO Restaurant(name, dateJoined, active) VALUES (?,?,?)', fields);
     });
-});
 
-
-
-// /restaurant/{restaurantID}
-app.delete('/restaurant/:restaurantID', async (req, res) => {
-    pool.getConnection(function (err, con){
-	var restaurantID = req.param('restaurantID');
-	con.query("DELETE FROM restaurant WHERE restaurantID = ? ", restaurantID,function (err, result, fields) {
-		if (err) throw err;
-		res.end(JSON.stringify(result));
-	});
+    app.put('/restaurant/:restaurantId', (req, res) => {
+        let restaurantId = req.param('restaurantId');
+        let rq = req.query;
+        let fields = [rq.activity, restaurantId];
+        returnQuery(res, 'UPDATE Restaurant SET activity = (?) WHERE restaurantID = (?)', fields);
     });
-});
+
+    app.delete('/restaurant/:restaurantId', (req, res) => {
+        let restaurantId = req.param('restaurantId');
+        returnQuery(res, 'DELETE FROM Restaurant WHERE restaurantId = (?)', restaurantId);
+    });
 
 }

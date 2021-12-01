@@ -10,6 +10,7 @@ import {UserTypes} from "../Models/User";
 import {Shipment} from "../Models/Shipment";
 import { DelivSearch } from "../Components/DelivSearch";
 
+
 export const ChangeStatus = (props) => { // Select from 3 statuses with select menu
     return (
         <div className="d-inline-block">
@@ -209,7 +210,7 @@ export class Deliveries extends React.Component {
             });
         });
     }
-    
+   
     
 
     render() {
@@ -247,6 +248,7 @@ export class Deliveries extends React.Component {
             }
         }
         console.log(searchIdx)
+
         let displayShipments = <></>;
         if (this.state.ids.length == 0) {
             displayShipments = <h1>Add some shipments first!</h1>
@@ -287,12 +289,15 @@ export class Deliveries extends React.Component {
         return (
             <>
                 <Navbar />
-                
+             
+
                 <div className="deliveries-root">
                     <div className="container main-panel">
                         <h1 className="ms-5 pt-4 inter text-muted fw-light">Deliveries</h1>
                         <h5 className="ms-5 mb-5 inter">Track your deliveries.</h5>
+
                         {/* <DelivSearch doRefresh={() => refresh()} onSearch={params => onSearch(params)}/> */}
+
                         <div className="p-5 panel-border panel-round mx-5">
                             {displayShipments}
                             {this.state.changeStatus}

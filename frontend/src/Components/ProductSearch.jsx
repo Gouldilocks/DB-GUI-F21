@@ -83,6 +83,7 @@ export const ProductSearch = props => {
                     </label>
                 </div>
                 <div class="form-check">
+
                     <input class="form-check-input" type="radio" name="filter" id="low" value="low" onChange={event => setStock(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
                         Low Stock

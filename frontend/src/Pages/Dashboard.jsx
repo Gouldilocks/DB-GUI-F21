@@ -42,8 +42,7 @@ export const DashboardPage = props => {
         }
     }
 
-    let onSearch = params => {
-        
+    let onSearch = params => {        
         let curItems;
         if( !inventoryService.hasInventory())
             return;
