@@ -10,16 +10,18 @@ import {User, UserTypes} from "../Models/User";
  * @param password
  * @param email
  * @param restaurantName
+ * @param supplierName
  * @param usertype
  * @returns {Promise<AxiosResponse<any> | T>}
  */
-const register = (username, password, email, restaurantName, usertype) => {
+const register = (username, password, email, restaurantName, supplierName, usertype) => {
     const request = {
         username: username,
         password: password,
         usertype: usertype,
         email: email,
-        restaurantName: restaurantName
+        restaurantName: restaurantName,
+        supplierName: supplierName
     };
 
     return axios.post(`http://${url}:8000/register?` + toQuery(request)).then(res => {
@@ -71,7 +73,19 @@ const deleteUser = (user) => {
     });
 }
 
+// TODO Need getEmployee and getSupplier
+
 const deleteEmployee = (user) => {
+    return axios.delete(`http://${url}:8000/employee/` + user.id).then(res => {
+        console.log(res);
+        return true;
+    }).catch(err => {
+        console.log(err.response);
+        return false;
+    });
+}
+
+const deleteSupplier = (user) => {
     return axios.delete(`http://${url}:8000/employee/` + user.id).then(res => {
         console.log(res);
         return true;

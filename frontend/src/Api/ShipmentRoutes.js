@@ -2,8 +2,7 @@ import axios from "axios";
 import {url} from "../Util/url";
 import {Product} from "../Models/Product";
 import {toQuery} from "../Util/utils";
-
-/// TODO Deal with OrderDetails and Orders here. Merge these
+import {Shipment} from "../Models/Shipment";
 
 /**
  * Adds an order to the order table.
@@ -17,12 +16,23 @@ const addOrder = (order) => {
         arrivalDate: order.arrivalDate,
         address: order.address,
         carrier: order.carrier,
-        delivered: order.delivered
+        delivered: order.delivered,
+        restaurantId: order.restaurantId
     };
 
     return axios.post(`http://${url}:8000/order?` + toQuery(request)).then(res => {
         console.log(res);
-        return true;
+
+        let promiseArr = [];
+        for(const i of order.items)
+            promiseArr.push(addOrderDetail(res.data.insertId, i.product.id, i.quantity));
+
+        return Promise.all(promiseArr).then(() => {
+            return true;
+        }).catch((err) => {
+            console.log(err);
+            return false;
+        });
     }).catch(err => {
         console.log(err.response);
         return false;
@@ -41,10 +51,130 @@ const updateOrder = (order) => {
         arrivalDate: order.arrivalDate,
         address: order.address,
         carrier: order.carrier,
-        delivered: order.delivered
+        delivered: order.delivered,
+        restaurantId: order.restaurantId
     };
 
-    return axios.put(`http://${url}:8000/order/${order.id}?` + toQuery(request)).then(res => {
+    if(!order.items || order.items.length === 0) {
+        console.log("No items when updating order");
+        return axios.put(`http://${url}:8000/order/${order.id}?` + toQuery(request)).then(res => {
+            console.log(res);
+            return true;
+        }).catch(err => {
+            console.log(err.response);
+            return false;
+        });
+    } else {
+        deleteOrderDetail(order.id).then(() => {
+            return axios.put(`http://${url}:8000/order/${order.id}?` + toQuery(request)).then(res => {
+                console.log(res);
+
+                let promiseArr = [];
+                for(const i of order.items)
+                    promiseArr.push(addOrderDetail(order.id, i.product, i.quantity));
+
+                return Promise.all(promiseArr).then(() => {
+                    return true;
+                }).catch((err) => {
+                    console.log(err);
+                    return false;
+                });
+            }).catch(err => {
+                console.log(err.response);
+                return false;
+            });
+        });
+    }
+
+}
+
+const deleteOrder = (orderId) => {
+    deleteOrderDetail(orderId).then(() => {
+        return axios.delete(`http://${url}:8000/order/` + orderId).then(res => {
+            console.log(res);
+            return true;
+        }).catch(err => {
+            console.log(err.response);
+            return false;
+        });
+    });
+}
+
+const getOrder = (orderId) => {
+    return axios.get(`http://${url}:8000/order/` + orderId).then(res => {
+        console.log(res);
+        let data = res.data[0];
+        let order = new Shipment(data.orderID,
+                                 data.orderDate,
+                                 data.sentDate,
+                                 data.estArrival,
+                                 data.address,
+                                 data.carrier,
+                                 data.delivered,
+                                 data.RestaurantID,
+                                 []
+        );
+
+        return getOrderDetail(order.id).then((itemsData) => {
+            for(const i of itemsData) {
+                order.items.push({productId: i.productID, quantity: i.quantity});
+            }
+            console.log("RETURN ORDER");
+            console.log(order);
+
+            return order;
+        }).catch(err => {
+            console.log(err.response);
+            return null;
+        });
+    }).catch(err => {
+        console.log(err.response);
+        return null;
+    });
+}
+
+const getOrders = (restaurantId) => {
+    let request = {
+        restaurantId: restaurantId
+    };
+
+    return axios.get(`http://${url}:8000/order?` + toQuery(request)).then(res => {
+        console.log(res);
+
+        let orders = [];
+        let promiseArr = [];
+
+        for(const td of res.data) {
+            let promise = getOrder(td.orderID).then((order) => {
+                orders.push(order);
+                console.log("Put Order: ");
+                console.log(order);
+            }).catch(err => {
+                console.log(err);
+            });
+            promiseArr.push(promise);
+        }
+
+        return Promise.all(promiseArr).then(() => {
+            return orders;
+        }).catch((err) => {
+            console.log(err);
+            return null;
+        });
+    }).catch(err => {
+        console.log(err.response);
+        return null;
+    });
+}
+
+const addOrderDetail = (orderId, productId, quantity) => {
+    let request = {
+        orderId: orderId,
+        productId: productId,
+        quantity: quantity
+    };
+
+    return axios.post(`http://${url}:8000/orderDetails?` + toQuery(request)).then(res => {
         console.log(res);
         return true;
     }).catch(err => {
@@ -53,18 +183,66 @@ const updateOrder = (order) => {
     });
 }
 
-const deleteOrder = (orderId) => {
-    return axios.delete(`http://${url}:8000/order/` + orderId).then(res => {
+const updateOrderDetail = (orderId, productId, quantity) => {
+    let request = {
+        orderId: orderId,
+        productId: productId,
+        quantity: quantity
+    };
+
+    return axios.put(`http://${url}:8000/orderDetails?` + toQuery(request)).then(res => {
         console.log(res);
         return true;
     }).catch(err => {
         console.log(err.response);
         return false;
+    });
+}
+
+/**
+ * Leave off product to delete all products associated with an orderId
+ * @param orderId
+ * @param productId
+ * @returns {Promise<boolean>}
+ */
+const deleteOrderDetail = (orderId, productId) => {
+    let request = {
+        orderId: orderId,
+        productId: productId
+    };
+
+    return axios.delete(`http://${url}:8000/orderDetails?` + toQuery(request)).then(res => {
+        console.log(res);
+        return true;
+    }).catch(err => {
+        console.log(err.response);
+        return false;
+    });
+}
+
+const getOrderDetail = (orderId, productId) => {
+    let request = {
+        orderId: orderId,
+        productId: productId
+    };
+
+    return axios.get(`http://${url}:8000/orderDetails?` + toQuery(request)).then(res => {
+        console.log(res);
+        return res.data;
+    }).catch(err => {
+        console.log(err.response);
+        return null;
     });
 }
 
 export {
     addOrder,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    getOrder,
+    getOrders,
+    addOrderDetail,
+    updateOrderDetail,
+    deleteOrderDetail,
+    getOrderDetail
 }

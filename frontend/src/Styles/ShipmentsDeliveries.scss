@@ -1,3 +1,5 @@
+$primaryColor: #0AAD5C;
+$borderColor: #D4D4D4;
 
 /*div{ Reduce the scope on these. Affects other pages
   padding-left: 3vw;
@@ -25,6 +27,14 @@
   .main-panel {
     height: 100vh;
     background-color: white;
+  }
+
+  .panel-round {
+    border-radius: 1rem;
+  }
+
+  .panel-border {
+    border: 1px solid $borderColor;
   }
 }
 

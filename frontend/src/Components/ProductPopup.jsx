@@ -16,6 +16,11 @@ const ProductPopup = props => {
 
     const pattern = new RegExp("^([0-9]+)$");
 
+    useEffect(() => {
+        setStock(props.item.stock);
+        setMinStock(props.item.minStock);
+    }, [props.show]);
+
     const onHide = () => {
         props.toggleShow();
 

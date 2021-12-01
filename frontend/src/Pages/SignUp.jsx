@@ -20,6 +20,7 @@ export const SignUpPage = ({ handleClose }) => {
     const [conPassword, setConPassword] = useState('');
     const [userType, setUserType] = useState(0);
     const [restaurantName, setRestaurantName] = useState('');
+    const [supplierName, setSupplierName] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
@@ -31,7 +32,7 @@ export const SignUpPage = ({ handleClose }) => {
             setErrorMsg("Passwords do not match");
             return;
         }
-        register(username, password, email, restaurantName, userType).then((result) => {
+        register(username, password, email, restaurantName, supplierName, userType).then((result) => {
             if(result === "Registered account successfully")
                 setSuccessMsg(result);
             else
@@ -68,7 +69,7 @@ export const SignUpPage = ({ handleClose }) => {
                 <TextField
                     label="Confirm Password"
                     variant="filled"
-                    type="conPassword"
+                    type="password"
                     required
                     value={conPassword}
                     onChange={temp => setConPassword(temp.target.value)}
@@ -96,6 +97,16 @@ export const SignUpPage = ({ handleClose }) => {
                         value={restaurantName}
                         onChange={temp => setRestaurantName(temp.target.value)}/>
                     : null
+                }
+                {/*(userType === 3) ?
+                    <TextField
+                        label="Supplier Name"
+                        variant="filled"
+                        type="supplier"
+                        required
+                        value={supplierName}
+                        onChange={temp => setSupplierName(temp.target.value)}/>
+                    : */null
                 }
                 {(errorMsg.length > 0) ? <p className="text-danger">* {errorMsg}</p> : null}
                 {(successMsg.length > 0) ? <p className="text-success">{successMsg}</p> : null}

@@ -10,7 +10,7 @@ export const ProductSearch = props => {
     const [ name, setName ] = useState("");
     const [ sort, setSort ] = useState("default");
     const [ stock, setStock ] = useState("default");
-    
+
     const [ restaurantName, setRestaurantName ] = useState("");
     const [ invalidName, setInvalidName ] = useState(false);
 
@@ -56,17 +56,18 @@ export const ProductSearch = props => {
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sort" id="asc" value="asc" onChange={event => setSort(event.target.value)}/>
+                    <input class="form-check-input" type="radio" name="sort" id="desc" value="desc" onChange={event => setSort(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
-                        Alphabetic
+                        Descending 
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sort" id="desc" value="desc" onChange={event => setSort(event.target.value)}/>
+                    <input class="form-check-input" type="radio" name="sort" id="asc" value="asc" onChange={event => setSort(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
-                        Unit Price 
+                        Ascending
                     </label>
                 </div>
+                
             </div>
             <div className="px-3">
                 <div class="form-check">
@@ -135,7 +136,7 @@ export const ProductSearch = props => {
                                        value={ name }
                                        className="form-control flex-grow-1 me-3"
                                        onChange={ event => setName(event.target.value) } />
-                                <button type="button" className="btn app-btn float-right" onClick={ () => props.onSearch({  name, sort, stock }) } >Search</button>
+                                <button type="button" className="btn app-btn float-right" onClick={ () => props.onSearch({ name, sort, stock }) } >Search</button>
                             </div>
                         </div>
                     </div>
