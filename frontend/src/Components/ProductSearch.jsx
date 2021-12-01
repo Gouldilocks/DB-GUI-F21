@@ -8,6 +8,9 @@ import {UserService} from "../Services/UserService";
 export const ProductSearch = props => {
 
     const [ name, setName ] = useState("");
+    const [ sort, setSort ] = useState("default");
+    const [ stock, setStock ] = useState("default");
+
     const [ restaurantName, setRestaurantName ] = useState("");
     const [ invalidName, setInvalidName ] = useState(false);
 
@@ -45,39 +48,43 @@ export const ProductSearch = props => {
         <div className="d-flex flex-row">
             <div className="px-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sort" id="default" value="default" defaultChecked/>
+                    <input class="form-check-input" type="radio" name="sort" id="default" value="default" 
+                    onChange={event => setSort(event.target.value)}
+                    defaultChecked/>
                     <label class="form-check-label" for="flexRadioDefault1">
-                        Default
+                        ID
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sort" id="asc" value="asc" />
+                    <input class="form-check-input" type="radio" name="sort" id="desc" value="desc" onChange={event => setSort(event.target.value)}/>
+                    <label class="form-check-label" for="flexRadioDefault2">
+                        Descending 
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="sort" id="asc" value="asc" onChange={event => setSort(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
                         Ascending
                     </label>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sort" id="desc" value="desc" />
-                    <label class="form-check-label" for="flexRadioDefault2">
-                        Descending
-                    </label>
-                </div>
+                
             </div>
             <div className="px-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="filter" id="flexRadioDefault1" defaultChecked/>
+                    <input class="form-check-input" type="radio" name="filter" id="default" value="default" onChange={event => setStock(event.target.value)} defaultChecked/>
                     <label class="form-check-label" for="flexRadioDefault1">
                         All
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="filter" id="flexRadioDefault2"/>
+                    <input class="form-check-input" type="radio" name="filter" id="in" value="in" onChange={event => setStock(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
                         In Stock
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="filter" id="flexRadioDefault3"/>
+
+                    <input class="form-check-input" type="radio" name="filter" id="low" value="low" onChange={event => setStock(event.target.value)}/>
                     <label class="form-check-label" for="flexRadioDefault2">
                         Low Stock
                     </label>
@@ -130,7 +137,7 @@ export const ProductSearch = props => {
                                        value={ name }
                                        className="form-control flex-grow-1 me-3"
                                        onChange={ event => setName(event.target.value) } />
-                                <button type="button" className="btn app-btn float-right" onClick={ () => props.onSearch({ name }) } >Search</button>
+                                <button type="button" className="btn app-btn float-right" onClick={ () => props.onSearch({ name, sort, stock }) } >Search</button>
                             </div>
                         </div>
                     </div>

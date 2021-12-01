@@ -42,14 +42,39 @@ export const DashboardPage = props => {
         }
     }
 
-    let onSearch = params => {
-        if(!params)
-            return inventoryService.getInventory().items;
+    let onSearch = params => {        
+        let curItems;
+        if( !inventoryService.hasInventory())
+            return;
+        if(!params){
+            curItems = inventoryService.getInventory().items;
+            return;
+        }
 
-        return inventoryService.getInventory().items.filter((item) => {
+        curItems = inventoryService.getInventory().items.filter((item) => {
             const productName = item.product.name.toLowerCase();
             return productName.includes(params.name.toLowerCase());
         });
+
+        if(params.sort == "asc"){
+            curItems = curItems.sort((a,b) => b.product.name.localeCompare(a.product.name))
+        }
+        if(params.sort == "desc"){
+            curItems = curItems.sort((a,b) => a.product.name.localeCompare(b.product.name))
+        }
+
+        if(params.stock == "in"){
+            curItems = curItems.filter((item) => {
+                return item.stock >= item.minStock;
+            })
+        }
+        if(params.stock == "low"){
+            curItems = curItems.filter((item) => {  
+                return item.stock < item.minStock;
+            })
+        }
+
+        return curItems;
     }
 
     return <>

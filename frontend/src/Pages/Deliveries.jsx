@@ -8,6 +8,8 @@ import {UserService} from "../Services/UserService";
 import {InventoryService} from "../Services/InventoryService";
 import {UserTypes} from "../Models/User";
 import {Shipment} from "../Models/Shipment";
+import { DelivSearch } from "../Components/DelivSearch";
+
 
 export const ChangeStatus = (props) => { // Select from 3 statuses with select menu
     return (
@@ -138,6 +140,8 @@ export class DeliveryComponent extends React.Component {
         );
     }
 }
+
+
 export class Deliveries extends React.Component {
 
     constructor(props) {
@@ -206,8 +210,15 @@ export class Deliveries extends React.Component {
             });
         });
     }
+   
+    
 
     render() {
+
+        const refresh = () => {
+            
+        }
+
         if(!this.state) {
             return (
                 <>
@@ -217,11 +228,35 @@ export class Deliveries extends React.Component {
             )
         }
 
+        let searchIdx = [];
+        for(var i = 0; i < this.state.items.length; i++)
+            searchIdx.push(i)
+        
+
+        let onSearch = params => {
+            if(params.name == ""){
+                for(var i = 0; i < this.state.items.length; i++)
+                    searchIdx.push(i)
+                return;
+            }
+
+            searchIdx = [];
+            
+            for (var i = 0; i < this.state.items.length; i++) {
+                if (this.state.items[i].toLowerCase().includes(params.name.toLowerCase())) 
+                    searchIdx.push(i);
+            }
+        }
+        console.log(searchIdx)
+
         let displayShipments = <></>;
         if (this.state.ids.length == 0) {
             displayShipments = <h1>Add some shipments first!</h1>
         } else {
-            for (let index in this.state.ids) {
+            for (let index in searchIdx) {
+                console.log(searchIdx)
+                
+                console.log(index)
                 if (index == this.state.rows.length) {
                     this.state.rows.push(<DeliveryComponent id={this.state.ids[index]}
                         item={this.state.items[index]}
@@ -254,10 +289,15 @@ export class Deliveries extends React.Component {
         return (
             <>
                 <Navbar />
+             
+
                 <div className="deliveries-root">
                     <div className="container main-panel">
                         <h1 className="ms-5 pt-4 inter text-muted fw-light">Deliveries</h1>
                         <h5 className="ms-5 mb-5 inter">Track your deliveries.</h5>
+
+                        {/* <DelivSearch doRefresh={() => refresh()} onSearch={params => onSearch(params)}/> */}
+
                         <div className="p-5 panel-border panel-round mx-5">
                             {displayShipments}
                             {this.state.changeStatus}
