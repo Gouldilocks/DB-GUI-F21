@@ -4,7 +4,6 @@ import {Product} from "../Models/Product";
 import {toQuery} from "../Util/utils";
 import {Shipment} from "../Models/Shipment";
 
-/// TODO Deal with OrderDetails and Orders here. Merge these
 /**
  * Adds an order to the order table.
  * @param order
@@ -12,13 +11,13 @@ import {Shipment} from "../Models/Shipment";
  */
 const addOrder = (order) => {
     let request = {
-        orderId: order.id,
         orderDate: order.orderDate,
         shippedDate: order.shippedDate,
         arrivalDate: order.arrivalDate,
         address: order.address,
         carrier: order.carrier,
-        delivered: order.delivered
+        delivered: order.delivered,
+        restaurantId: order.restaurantId
     };
 
     return axios.post(`http://${url}:8000/order?` + toQuery(request)).then(res => {
@@ -26,9 +25,9 @@ const addOrder = (order) => {
 
         let promiseArr = [];
         for(const i of order.items)
-            promiseArr.push(addOrderDetail(order.id, i.product, i.quantity));
+            promiseArr.push(addOrderDetail(res.data.insertId, i.product.id, i.quantity));
 
-        Promise.all(promiseArr).then(() => {
+        return Promise.all(promiseArr).then(() => {
             return true;
         }).catch((err) => {
             console.log(err);
@@ -76,9 +75,9 @@ const updateOrder = (order) => {
     });
 }
 
-const deleteOrder = (order) => {
-    deleteOrderDetail(order.id).then(() => {
-        return axios.delete(`http://${url}:8000/order/` + order.id).then(res => {
+const deleteOrder = (orderId) => {
+    deleteOrderDetail(orderId).then(() => {
+        return axios.delete(`http://${url}:8000/order/` + orderId).then(res => {
             console.log(res);
             return true;
         }).catch(err => {
@@ -112,6 +111,40 @@ const getOrder = (orderId) => {
             return order;
         }).catch(err => {
             console.log(err.response);
+            return null;
+        });
+    }).catch(err => {
+        console.log(err.response);
+        return null;
+    });
+}
+
+const getOrders = (restaurantId) => {
+    let request = {
+        restaurantId: restaurantId
+    };
+
+    return axios.get(`http://${url}:8000/order?` + toQuery(request)).then(res => {
+        console.log(res);
+
+        let orders = [];
+        let promiseArr = [];
+
+        for(const td of res.data) {
+            let promise = getOrder(td.orderID).then((order) => {
+                orders.put(order);
+                return orders;
+            }).catch(err => {
+                console.log(err.response);
+                return null;
+            });
+            promiseArr.push(promise);
+        }
+
+        Promise.all(promiseArr).then(() => {
+            return orders;
+        }).catch((err) => {
+            console.log(err);
             return null;
         });
     }).catch(err => {
@@ -193,6 +226,7 @@ export {
     updateOrder,
     deleteOrder,
     getOrder,
+    getOrders,
     addOrderDetail,
     updateOrderDetail,
     deleteOrderDetail,

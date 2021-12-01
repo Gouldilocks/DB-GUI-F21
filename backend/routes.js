@@ -80,10 +80,20 @@ module.exports = function routes(app, logger) {
 
     // GET All Orders
     app.get('/order', (req, res) => {
-        returnQuery(res, 'SELECT * FROM `Order`');
+        let rq = req.query;
+
+        if(badParam(rq.orderId) && badParam(rq.restaurantId)) {
+            returnQuery(res, 'SELECT * FROM `Order`');
+        } else {
+            if(!badParam(rq.orderId)) {
+                returnQuery(res, 'SELECT * FROM `Order` WHERE orderID = (?)', rq.orderId);
+            }
+            if(!badParam(rq.restaurantId)) {
+                returnQuery(res, 'SELECT * FROM `Order` WHERE RestaurantID = (?)', rq.restaurantId);
+            }
+        }
     });
 
-    // GET All Orders
     app.get('/order/:orderId', (req, res) => {
         let orderId = req.param('orderId');
         returnQuery(res, 'SELECT * FROM `Order` WHERE orderID = (?)', orderId);
@@ -91,7 +101,7 @@ module.exports = function routes(app, logger) {
 
     // POST Order
     app.post('/order', (req, res) => {
-        let query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered, restaurantID) VALUES (?,?,?,?,?,?,?)';
+        let query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered, RestaurantID) VALUES (?,?,?,?,?,?,?)';
         let rq = req.query;
         let fields = [rq.orderDate, rq.address, rq.carrier, rq.shippedDate, rq.arrivalDate, rq.delivered, rq.restaurantId];
         returnQuery(res, query, fields);
@@ -99,7 +109,7 @@ module.exports = function routes(app, logger) {
 
     // UPDATE Order
     app.put('/order/:orderId', (req, res) => {
-        let query = 'UPDATE `Order` SET orderDate = (?), deliveryAddress = (?), carrier = (?), sentDate = (?), estArrival = (?), delivered = (?), restaurantID = (?) WHERE orderID = (?)';
+        let query = 'UPDATE `Order` SET orderDate = (?), deliveryAddress = (?), carrier = (?), sentDate = (?), estArrival = (?), delivered = (?), RestaurantID = (?) WHERE orderID = (?)';
         let orderId = req.param('orderId');
         let rq = req.query;
         let fields = [rq.orderDate, rq.address, rq.carrier, rq.shippedDate, rq.arrivalDate, rq.delivered, rq.restaurantId, orderId];

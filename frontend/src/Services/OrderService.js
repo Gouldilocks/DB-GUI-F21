@@ -1,30 +1,23 @@
-import {addOrder, updateOrder, getOrder} from "../Api/ShipmentRoutes";
+import {addOrder, updateOrder, getOrder, getOrders} from "../Api/ShipmentRoutes";
 import {Shipment} from "../Models/Shipment";
 
 export class OrderService {
 
-    hasOrder() {
-        return (this.getOrder() !== null);
-    }
-
-    getOrder() {
-        if(window.order)
-            return window.order;
-        else
-            return null;
-    }
-
     loadOrder(orderId, callback) {
         getOrder(orderId).then((order) => {
-            window.order = order;
             callback(order);
         });
     }
 
+    loadOrders(restaurantId, callback) {
+        getOrders(restaurantId).then((orders) => {
+            callback(orders);
+        });
+    }
+
     postOrder(restaurantId, address, carrier, items, callback) {
-        let date = new Date();
-        let orderDate = date.getMonth() + "-" + date.getDate() + "-" + date.getFullYear();
-        let order = new Shipment(null, orderDate, null, null, address, carrier, 0, restaurantId, items);
+        const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        let order = new Shipment(null, date, null, null, address, carrier, 0, restaurantId, items);
         addOrder(order).then((valid) => {
             if(valid) {
                 console.log("Posted order: ");

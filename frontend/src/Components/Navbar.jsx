@@ -59,9 +59,9 @@ export const Navbar = () => {
                     }
                 </div>
                 <div className="ms-auto px-1">
-                    <button id="notifications" className="btn circle-btn">
+                    {/*<button id="notifications" className="btn circle-btn">
                         <img src={BellImg} alt="Notifications" />
-                    </button>
+                    </button>*/}
                 </div>
                 <div className="me-4 ms-4">
                     <Dropdown>
