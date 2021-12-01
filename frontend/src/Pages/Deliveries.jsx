@@ -125,7 +125,7 @@ export class DeliveryComponent extends React.Component {
         return (
             <tr>
                 <td className="w-10">{this.props.id}</td>
-                <td className="w-50">{this.props.item} {/*<button type="button" className={this.state.rowHeightState} onClick={this.switchArrow}>{this.state.button}</button>*/}</td>
+                <td className="w-50">{(this.props.item && this.props.item === "") ? "No items" : this.props.item}</td>
                 <td className="w-10">{dateThing}</td>
                 <td className="w-25">
                     {this.state.status}
