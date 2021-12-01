@@ -201,9 +201,10 @@ module.exports = function routes(app, logger) {
         var sentDate = req.body.sentDate;
         var estArrival = req.body.estArrival;
         var delivered = req.body.delivered;
-
-        var query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered)' + 
-                    'VALUES ((?)(?)(?)(?)(?)(?))';
+        var restaurantID = req.body.restaurantID;
+        var supplierID = req.body.supplierID;
+        var query = 'INSERT INTO `Order`(orderDate, deliveryAddress, carrier, sentDate, estArrival, delivered, restaurantID, supplierID)' + 
+                    'VALUES ((?)(?)(?)(?)(?)(?)(?)(?))';
 
         // if there is no issue obtaining a connection, execute query and release connection
         // Will need to change the query to the appropriately named table
