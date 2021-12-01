@@ -709,7 +709,7 @@ app.get('/Restaurant', function (req, res) {
 // /productTable
 app.get('/allProductTable', function (req, res) {
     pool.getConnection(function (err, con){
-	con.query("SELECT * FROM productTable",function (err, result, fields) {
+	con.query("SELECT * FROM ProductTable",function (err, result, fields) {
 		if (err) throw err;
 		res.end(JSON.stringify(result)); // Result in JSON format
 	});
